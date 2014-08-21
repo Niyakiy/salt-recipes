@@ -1,0 +1,10 @@
+{{ domain_name }}	IN	SOA	{{ auth_dns_name }}. {{ admin_mail }}. {{ serial }} {{ refresh }} {{ retry }} {{ expire }} {{ minimum_ttl }}
+{{ domain_name }}	IN	NS	{{ default_ttl }}    ns1.{{ domain_name }}.
+{{ domain_name }}	IN	NS	{{ default_ttl }}    ns2.{{ domain_name }}.
+{% for record, args in pillar['powerdns-zones'][domain_name].iteritems() -%}
+{% if record == '__root' -%}
+{{ domain_name }}	IN	A	{{ default_ttl }}	{{ pillar['powerdns-zones'][domain_name][record] }}
+{% else -%}
+{{record}}.{{ domain_name }}	IN	A	{{ default_ttl }}	{{ pillar['powerdns-zones'][domain_name][record] }}
+{% endif -%}
+{% endfor %}

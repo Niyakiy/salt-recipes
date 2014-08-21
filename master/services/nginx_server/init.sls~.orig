@@ -1,0 +1,30 @@
+nginx-repo-key-install:
+  cmd.run:
+    {% if grains['os'] in ['Debian', 'Ubuntu'] %}
+    - name: 'apt-key adv --keyserver keys.gnupg.net --recv-keys ABF5BD827BD9BF62'
+    - unless: 'apt-key list | grep -q 7BD9BF62'
+    {% else %}
+    - name: echo "Unsupported system!"
+    {% endif %}
+
+nginx-repo:
+  pkgrepo.managed:
+    - humanname: nginx-repo
+    - name: deb http://nginx.org/packages/mainline/debian/ wheezy nginx
+    - require_in:
+      - pkg: nginx-pkg
+    - required:
+      - cmd: nginx-repo-key-install
+
+nginx-pkg:
+  pkg.installed:
+    - name: nginx
+    - refresh: True
+    - require:
+      - pkgrepo: nginx-repo
+
+nginx-service:
+  service.running:
+    - name: nginx
+    - require:
+      - pkg: nginx-pkg
